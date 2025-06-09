@@ -1,0 +1,82 @@
+1-All restaurants in borough (a town) "Brooklyn" and cuisine (a style of cooking) "Hamburgers".
+ 
+db.restaurant.find( { borough: "Brooklyn", cuisine: "Hamburgers" });
+ 
+2.The number of restaurants in the borough "Brooklyn" and cuisine "Hamburgers".
+ 
+db.restaurant(
+    { borough: "Brooklyn", cuisine: "Hamburgers" }).count();
+ 
+3-All restaurants with zipcode 11225
+ 
+db.restaurant.find({ "address.zipcode": "11225" });
+ 
+4. Names of restaurants with zipcode 11225 that have at least one grade "C".
+ 
+db.restaurant.find(
+    { 
+        "address.zipcode": "11225", 
+        "grades.grade": "C" 
+    });
+ 
+5-Names of restaurants with zipcode 11225 that have as first grade "C" and as second grade"A
+ 
+db.restaurant.find(
+    { 
+        "address.zipcode": "11225", 
+		"grades.0.grade": "C",
+        "grades.1.grade": "A" 
+    });
+ 
+ 
+6 Names and streets of restaurants that don't have an "A" grade
+ 
+db.restaurant.find(
+    { "grades.grade": { $ne: "A" } }, 
+    { name: 1, "address.street": 1, _id: 0 }  
+);
+ 
+7- All restaurants with a grade C and a score greater than 50.
+ 
+db.restaurant.find({ "grades.grade": "C", "grades.score": { $gt: 50 } });
+ 
+ 
+8 All restaurants with a grade C or a score greater than 50.
+ 
+db.restaurant.find(
+    { 
+        $or: [
+            { "grades.grade": "C" }, 
+            { "grades.score": { $gt: 50 } }
+        ]
+    });
+ 
+ 
+9-All restaurants that have only A grades.
+ 
+db.restaurant.find({ "grades": { $not: { $elemMatch: { grade: { $ne: "A" } } } } });
+ 
+ 
+10- A table with zipcode and number of restaurants that are in the borough "Queens" and have "Brazilian" cuisine.
+ 
+db.restaurant.aggregate([
+    { 
+        $match: { 
+            borough: "Queens", 
+            cuisine: "Brazilian" 
+        } 
+    },
+    { 
+        $group: { 
+            _id: "$address.zipcode", 
+            count: { $sum: 1 } 
+        } 
+    },
+    { 
+        $project: { 
+            zipcode: "$_id",
+            numberOfRestaurants: "$count", 
+            _id: 0
+        } 
+    }
+]);
